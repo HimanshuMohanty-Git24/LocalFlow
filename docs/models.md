@@ -22,13 +22,18 @@ copy the file into this repo's `models/` folder. Example names:
 
 Do not use the OpenAI cloud API. Do not point LocalFlow at a URL.
 
+The Windows installer from GitHub Releases already includes `ggml-base.en.bin`,
+Silero VAD, and `vocabulary.txt`. You only need this page for development or
+to add a larger Whisper file / optional Qwen GGUF.
+
 ## Search order
 
 The app looks in:
 
 1. `LOCALFLOW_MODELS_DIR` if set
 2. `models/` next to the working directory
-3. `models/` next to the executable
+3. `models/` next to the executable (installer layout)
+4. `%LOCALAPPDATA%\LocalFlow\models` (optional extra models such as Qwen)
 
 It picks `small.en`, then `base.en`, then `tiny.en`, then any other
 `ggml-*.bin` / `ggml-*.gguf`.

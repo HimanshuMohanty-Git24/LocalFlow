@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: windows-nsis
+    runs-on: windows-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install LLVM
+        run: choco install llvm -y --no-progress
+
+      - name: Download bundled models
+        shell: bash
+        run: |
+          mkdir -p models
+          curl -L --fail --retry 3 -o models/ggml-base.en.bin \
+            "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin"
+          curl -L --fail --retry 3 -o models/ggml-silero-v5.1.2.bin \
+            "https://huggingface.co/ggml-org/whisper-vad/resolve/main/ggml-silero-v5.1.2.bin"
+
+      - name: Install frontend
+        run: npm ci
+
+      - name: Build Windows installer
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LIBCLANG_PATH: C:\Program Files\LLVM\bin
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: LocalFlow ${{ github.ref_name }}
+          releaseBody: |
+            Offline Windows dictation. Install the NSIS `.exe`, then hold Ctrl+B to speak.
+
+            The installer includes Whisper `base.en` and Silero VAD. Qwen is optional: copy a GGUF into `%LOCALAPPDATA%\LocalFlow\models` if you want AI cleanup.
+
+            Windows may warn that the app is unsigned (SmartScreen). That is expected until a code-signing certificate is added.
+          releaseDraft: false
+          prerelease: false
+          args: --bundles nsis

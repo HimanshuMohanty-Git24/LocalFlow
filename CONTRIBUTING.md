@@ -19,3 +19,8 @@ npm install
 npm run test:rust
 npm run tauri dev
 ```
+
+## Pull requests
+
+`main` is protected. Open a pull request; only the repository owner can merge.
+Do not push directly to `main`.

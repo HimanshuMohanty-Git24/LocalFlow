@@ -16,8 +16,13 @@ pub fn search_dirs() -> Vec<PathBuf> {
     if let Ok(exe) = std::env::current_exe() {
         if let Some(parent) = exe.parent() {
             dirs.push(parent.join("models"));
+            dirs.push(parent.join("resources").join("models"));
+            dirs.push(parent.to_path_buf());
             dirs.push(parent.join("../../../models"));
         }
+    }
+    if let Ok(appdata) = std::env::var("LOCALAPPDATA") {
+        dirs.push(PathBuf::from(appdata).join("LocalFlow").join("models"));
     }
     dirs
 }

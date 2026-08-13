@@ -37,6 +37,25 @@ npm run tauri dev
 The app lives in the system tray. Closing the window hides it; use **Quit**
 in the tray menu to exit.
 
+## Install (Windows)
+
+Download the latest **NSIS installer** (`.exe`) from
+[Releases](https://github.com/HimanshuMohanty-Git24/LocalFlow/releases).
+It is a current-user install (no admin). Whisper `base.en` is included.
+
+Windows SmartScreen may warn because the installer is not yet code-signed.
+
+## Releases
+
+Push a version tag to build and publish the installer:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+`main` only accepts pull requests. Do not push commits directly to `main`.
+
 ## Privacy
 
 See [docs/privacy.md](docs/privacy.md). Audio, transcripts, and telemetry are
