@@ -1,0 +1,75 @@
+html,
+body,
+#root {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+}
+
+.overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 0;
+  animation: hover 2.6s ease-in-out infinite;
+}
+
+.hint {
+  max-width: 380px;
+  padding: 8px 16px;
+  border-radius: 16px;
+  background: #111213;
+  color: #f4f4f5;
+  font: 13px/1.3 "Segoe UI", system-ui, sans-serif;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.hint strong {
+  font-weight: 700;
+}
+
+.mic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #f4f4f5;
+  background: rgba(18, 18, 20, 0.92);
+}
+
+.is-listening .mic,
+.is-processing .mic {
+  animation: pulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.25);
+}
+
+@keyframes hover {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.28);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+  }
+}

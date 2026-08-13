@@ -1,0 +1,19 @@
+# Personal words LocalFlow should keep. One line each.
+# Optional aliases: Canonical = Wrong1, Wrong2
+#
+# Whisper is primed with these names. Close spellings in the transcript
+# are corrected after recognition.
+
+Himanshu = Manchu, Manshu, Himansu, Imansu, Jiman
+Odisha = Orissa, Orysa, Odisa
+Angul
+LocalFlow
+startup
+the ground up = gowns up, grounds up
+paying a penny = paying a fund, paying for penny
+Wispr Flow = whisper flow, whisperflow
+defence tech = defend spec, defense spec, defend tech
+B. R. Ambedkar = B. R. M. Betka, BR Ambedkar, Ambedkar
+Yuval Noah Harari = Juvall Nohar Harari, Juval Noharari, Yuval Noah Harari
+Bhagat Singh
+Sapiens

@@ -1,0 +1,134 @@
+:root {
+  color: #e8eef6;
+  background: #10151c;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+}
+
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 12px;
+  background: #0c1117;
+  border-right: 1px solid #243041;
+}
+
+nav button,
+main button {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #1b2736;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+nav button.active,
+main button:hover,
+nav button:hover {
+  background: #2a6f97;
+}
+
+main {
+  padding: 28px 32px 48px;
+}
+
+.lede {
+  color: #9fb0c3;
+  max-width: 42rem;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  max-width: 36rem;
+  margin: 16px 0;
+}
+
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid #243041;
+  background: #151c26;
+  cursor: default;
+}
+
+.mode-card strong {
+  font-size: 1.05rem;
+}
+
+.mode-card span {
+  color: #9fb0c3;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.mode-card:hover {
+  background: #1b2736;
+}
+
+.card,
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 36rem;
+}
+
+.row-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid #243041;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label.check {
+  flex-direction: row;
+  align-items: center;
+}
+
+input,
+select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0c1117;
+  color: inherit;
+}
+
+.error {
+  color: #f87171;
+}
