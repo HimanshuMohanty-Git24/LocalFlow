@@ -45,6 +45,10 @@ It is a current-user install (no admin). Whisper `base.en` is included.
 
 Windows SmartScreen may warn because the installer is not yet code-signed.
 
+After install, see [docs/install.md](docs/install.md) for first use and how
+to add optional local Qwen (AI cleanup) into
+`%LOCALAPPDATA%\LocalFlow\models`.
+
 ## Releases
 
 Push a version tag to build and publish the installer:

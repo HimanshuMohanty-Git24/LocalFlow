@@ -55,7 +55,7 @@ jobs:
           releaseBody: |
             Offline Windows dictation. Install the NSIS `.exe`, then hold Ctrl+B to speak.
 
-            The installer includes Whisper `base.en` and Silero VAD. Qwen is optional: copy a GGUF into `%LOCALAPPDATA%\LocalFlow\models` if you want AI cleanup.
+            The installer includes Whisper `base.en` and Silero VAD. Setup and optional Qwen: https://github.com/HimanshuMohanty-Git24/LocalFlow/blob/main/docs/install.md
 
             Windows may warn that the app is unsigned (SmartScreen). That is expected until a code-signing certificate is added.
           releaseDraft: false

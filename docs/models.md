@@ -59,6 +59,11 @@ If that file is missing, dictation still runs on the full capture.
 
 ## Qwen (optional)
 
-Place `Qwen3-0.6B-Q8_0.gguf` in `models/` (Hugging Face `Qwen/Qwen3-0.6B-GGUF`).
+**Installed app:** follow [install.md](install.md) — put
+`Qwen3-0.6B-Q8_0.gguf` in `%LOCALAPPDATA%\LocalFlow\models`, then restart.
+
+**Development:** place the same file in this repo’s `models/` folder
+(Hugging Face `Qwen/Qwen3-0.6B-GGUF`).
+
 Turn **AI cleanup with local Qwen** on in Settings. If the file is missing,
 rule cleanup still runs.
