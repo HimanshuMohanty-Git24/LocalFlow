@@ -13,10 +13,7 @@ function Overlay() {
     const unlisteners: Array<() => void> = [];
     void listen<AppState>("flow-state", (event) => {
       setState(event.payload);
-      if (
-        event.payload === "listening" ||
-        event.payload === "preparing"
-      ) {
+      if (event.payload === "listening" || event.payload === "preparing") {
         setText("");
       }
     }).then((fn) => unlisteners.push(fn));
@@ -37,42 +34,57 @@ function Overlay() {
   }, []);
 
   const listening = state === "listening" || state === "preparing";
-  const processing = state === "transcribing";
+  const processing =
+    state === "transcribing" ||
+    state === "normalizing" ||
+    state === "injecting";
+  const showWave = state === "listening" || state === "speech_detected";
+
   const listenHint =
     listenMode === "long"
-      ? "Long listen — Space or Esc to stop"
+      ? "Long listen — Space or Esc"
       : listenMode === "awaiting"
-        ? "Tap Ctrl+B again for long, or wait"
-        : "Listening — release to stop";
-  const hint = listening
-    ? listenHint
-    : processing
-      ? "Processing"
+        ? "Tap Ctrl+B again for long"
+        : "Listening";
+
+  if (showWave) {
+    return (
+      <div className="overlay is-listening">
+        <div className="pill pill-listen" aria-label={listenHint}>
+          <span className="pill-dot cancel" />
+          <div className="wave">
+            {Array.from({ length: 13 }, (_, i) => (
+              <i key={i} style={{ animationDelay: `${i * 0.06}s` }} />
+            ))}
+          </div>
+          <span className="pill-dot confirm" />
+        </div>
+      </div>
+    );
+  }
+
+  const label = processing
+    ? "Processing"
+    : listening
+      ? listenHint
       : text
         ? text
-        : "Dictate Ctrl + B";
+        : "Dictate";
+  const shortcut =
+    !processing && !text && listenMode !== "long" ? "Ctrl + B" : null;
 
   return (
     <div
       className={`overlay ${listening ? "is-listening" : ""} ${processing ? "is-processing" : ""}`}
     >
-      <div className="hint">
-        {listening || processing ? (
-          <>
-            {hint}
-            {listenMode !== "long" ? (
-              <>
-                {" "}
-                <strong>Ctrl + B</strong>
-              </>
-            ) : null}
-          </>
-        ) : (
-          hint
-        )}
+      <div className="pill pill-hint">
+        <span className="pill-text">
+          {label}
+          {shortcut ? <strong> {shortcut}</strong> : null}
+        </span>
       </div>
-      <div className="mic" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="18" height="18">
+      <div className="pill pill-mic" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16">
           <path
             fill="currentColor"
             d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.93V20H9v2h6v-2h-2v-2.07A7 7 0 0 0 19 11h-2z"

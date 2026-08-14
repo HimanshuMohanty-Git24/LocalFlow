@@ -6,7 +6,7 @@ You do not need Git, Node, or Rust.
 
 ## Install and dictate
 
-1. Download the latest NSIS `.exe` (for example `LocalFlow_0.1.0_x64-setup.exe`).
+1. Download the latest NSIS `.exe` (for example `LocalFlow_0.1.1_x64-setup.exe`).
 2. Run it. It installs for your Windows user only — no admin password.
 3. If SmartScreen warns that the app is unsigned, choose **More info** → **Run anyway**.
 4. Click in any text field, hold **Ctrl+B**, speak, then release.
