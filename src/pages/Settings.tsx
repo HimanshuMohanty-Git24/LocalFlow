@@ -101,6 +101,13 @@ export function SettingsPage({
           />
           AI cleanup with local Qwen (offline)
         </label>
+        <p className="lede">
+          Qwen is not in the installer. Download{" "}
+          <code>Qwen3-0.6B-Q8_0.gguf</code> from Hugging Face (
+          Qwen/Qwen3-0.6B-GGUF), copy it into{" "}
+          <code>%LOCALAPPDATA%\LocalFlow\models</code>, then quit and reopen
+          LocalFlow. Dictation still works without it.
+        </p>
         <label className="check">
           <input
             type="checkbox"
