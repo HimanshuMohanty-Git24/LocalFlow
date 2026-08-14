@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { AppStatus, MicTestResult } from "../types/settings";
 import { IconCopy, IconFolder } from "../ui/icons";
 
@@ -28,7 +28,8 @@ const STATE_LABEL: Record<string, string> = {
 };
 
 function modelName(value: string | undefined) {
-  if (!value || value === "—") return "Not loaded";
+  if (!value || value === "—") return "Checking…";
+  if (value === "Not loaded") return "Ready · loads on first use";
   return value.replace(/^.*[\\/]/, "").replace(/\.(bin|gguf)$/i, "");
 }
 
@@ -46,6 +47,7 @@ export function Dashboard({
   onShortUp,
 }: Props) {
   const [copied, setCopied] = useState(false);
+  const shortActive = useRef(false);
   const inserted = lastCleaned ?? lastTranscript;
   const hotkey = status?.hotkey ?? "Ctrl+B";
 
@@ -58,6 +60,18 @@ export function Dashboard({
     } catch {
       setCopied(false);
     }
+  };
+
+  const startShort = () => {
+    if (shortActive.current) return;
+    shortActive.current = true;
+    onShortDown();
+  };
+
+  const finishShort = () => {
+    if (!shortActive.current) return;
+    shortActive.current = false;
+    onShortUp();
   };
 
   return (
@@ -102,11 +116,35 @@ export function Dashboard({
           type="button"
           className="mode-card"
           onPointerDown={(event) => {
+            if (event.button !== 0) return;
             event.preventDefault();
-            onShortDown();
+            event.currentTarget.setPointerCapture(event.pointerId);
+            startShort();
           }}
-          onPointerUp={onShortUp}
-          onPointerCancel={onShortUp}
+          onPointerUp={(event) => {
+            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+              event.currentTarget.releasePointerCapture(event.pointerId);
+            }
+            finishShort();
+          }}
+          onPointerCancel={finishShort}
+          onLostPointerCapture={finishShort}
+          onKeyDown={(event) => {
+            if (
+              !event.repeat &&
+              (event.key === " " || event.key === "Enter")
+            ) {
+              event.preventDefault();
+              startShort();
+            }
+          }}
+          onKeyUp={(event) => {
+            if (event.key === " " || event.key === "Enter") {
+              event.preventDefault();
+              finishShort();
+            }
+          }}
+          aria-label="Hold for short dictation"
         >
           <strong>Short listen</strong>
           <span>Hold this, or hold {hotkey}. Speak, then release.</span>
@@ -141,8 +179,8 @@ export function Dashboard({
         </div>
       ) : (
         <p className="hint">
-          Put a Whisper ggml file in <code>models/</code>, then use Short or
-          Long. See docs/models.md.
+          Whisper loads locally on your first dictation. Choose Short or Long
+          listen when you are ready.
         </p>
       )}
 
@@ -158,7 +196,7 @@ export function Dashboard({
         <button type="button" className="ghost" onClick={onOpenSettings}>
           Open settings
         </button>
-        {lastRecording ? (
+        {lastRecording?.path ? (
           <button
             type="button"
             className="ghost"

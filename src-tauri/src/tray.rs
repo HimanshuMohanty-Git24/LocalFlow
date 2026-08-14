@@ -12,7 +12,9 @@ pub fn show_main_window(app: &AppHandle) -> Result<(), AppError> {
     let window = app
         .get_webview_window(MAIN_WINDOW)
         .ok_or_else(|| AppError::WindowMissing(MAIN_WINDOW.to_string()))?;
-    window.show().map_err(|e| AppError::message(e.to_string()))?;
+    window
+        .show()
+        .map_err(|e| AppError::message(e.to_string()))?;
     window
         .unminimize()
         .map_err(|e| AppError::message(e.to_string()))?;

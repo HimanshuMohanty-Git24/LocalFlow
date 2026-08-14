@@ -18,9 +18,7 @@ pub struct Microphone {
 /// Lists input devices on the default CPAL host (WASAPI on Windows).
 pub fn list_microphones() -> Result<Vec<Microphone>, AppError> {
     let host = cpal::default_host();
-    let default_name = host
-        .default_input_device()
-        .and_then(|d| d.name().ok());
+    let default_name = host.default_input_device().and_then(|d| d.name().ok());
 
     let devices = host
         .input_devices()
@@ -81,7 +79,9 @@ pub fn resolve_input_device(
 
 fn find_device(host: &cpal::Host, id: &str) -> Option<cpal::Device> {
     let devices = host.input_devices().ok()?;
-    devices.into_iter().find(|d| d.name().ok().as_deref() == Some(id))
+    devices
+        .into_iter()
+        .find(|d| d.name().ok().as_deref() == Some(id))
 }
 
 /// Display name for the dashboard: selected device, else default, else a placeholder.

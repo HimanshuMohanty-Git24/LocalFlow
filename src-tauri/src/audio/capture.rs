@@ -15,7 +15,7 @@ use crate::errors::AppError;
 
 const MAX_SECONDS: u32 = 180;
 
-/// Result of a recording. `path` is a temp WAV; audio samples are not logged.
+/// Result of a WAV explicitly saved for a mic test or by user preference.
 #[derive(Debug, Clone, Serialize)]
 pub struct MicTestResult {
     pub path: String,
@@ -45,9 +45,13 @@ pub struct CapturedAudio {
 
 impl CapturedAudio {
     pub fn save_wav(&self) -> Result<MicTestResult, AppError> {
-        let frames = self.samples.len() / self.channels.max(1) as usize;
         let path = recording_wav_path()?;
-        write_pcm16_wav(&path, self.sample_rate, self.channels, &self.samples)?;
+        self.save_wav_to(&path)
+    }
+
+    pub fn save_wav_to(&self, path: &Path) -> Result<MicTestResult, AppError> {
+        let frames = self.samples.len() / self.channels.max(1) as usize;
+        write_pcm16_wav(path, self.sample_rate, self.channels, &self.samples)?;
         tracing::info!(
             duration_ms = self.duration_ms,
             sample_rate = self.sample_rate,
@@ -83,12 +87,7 @@ impl CaptureSession {
 
         let buffer = Arc::new(Mutex::new(RingBuffer::with_capacity(capacity)));
         let err_flag = Arc::new(Mutex::new(None::<String>));
-        let stream = build_stream(
-            &device,
-            &config,
-            Arc::clone(&buffer),
-            Arc::clone(&err_flag),
-        )?;
+        let stream = build_stream(&device, &config, Arc::clone(&buffer), Arc::clone(&err_flag))?;
 
         tracing::info!(
             sample_rate,
@@ -158,9 +157,9 @@ pub fn max_capture_seconds() -> u32 {
 fn recording_wav_path() -> Result<PathBuf, AppError> {
     let stamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_secs())
+        .map(|d| d.as_millis())
         .unwrap_or(0);
-    Ok(std::env::temp_dir().join(format!("localflow-mic-{stamp}.wav")))
+    Ok(std::env::temp_dir().join(format!("localflow-mic-{stamp}-{}.wav", std::process::id())))
 }
 
 fn build_stream(

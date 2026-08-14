@@ -21,7 +21,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          components: rustfmt
+          components: rustfmt, clippy
 
       - uses: swatinem/rust-cache@v2
         with:
@@ -35,9 +35,18 @@ jobs:
       - name: Install frontend
         run: npm ci
 
-      - name: Typecheck
-        run: npx tsc --noEmit
+      - name: Frontend production build
+        run: npm run build
 
+      - name: Rust format
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+
+      - name: Rust lint
+        env:
+          LIBCLANG_PATH: C:\Program Files\LLVM\bin
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+
+      # Run behavior tests only after both static gates pass.
       - name: Rust tests
         env:
           LIBCLANG_PATH: C:\Program Files\LLVM\bin

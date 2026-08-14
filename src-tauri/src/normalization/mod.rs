@@ -87,8 +87,7 @@ fn match_command(words: &[&str]) -> Option<(Command, usize)> {
     }
     if eq(w0, "at") && words.len() >= 3 {
         let domain = words[1].trim_matches(|c: char| !c.is_ascii_alphanumeric());
-        if words.len() >= 4 && (eq(words[2], "dot") || eq(words[2], "period")) && is_tld(words[3])
-        {
+        if words.len() >= 4 && (eq(words[2], "dot") || eq(words[2], "period")) && is_tld(words[3]) {
             let tld = words[3].trim_matches(|c: char| !c.is_ascii_alphanumeric());
             if domain.len() >= 2 {
                 return Some((Command::Insert(format!("@{domain}.{tld}")), 4));
@@ -168,7 +167,12 @@ fn parse_clock_token(w: &str) -> Option<String> {
 
 fn split_ampm(s: &str) -> Option<(&str, &'static str)> {
     let s = s.trim_end_matches('.');
-    for (suffix, ap) in [("p.m", "p.m."), ("a.m", "a.m."), ("pm", "p.m."), ("am", "a.m.")] {
+    for (suffix, ap) in [
+        ("p.m", "p.m."),
+        ("a.m", "a.m."),
+        ("pm", "p.m."),
+        ("am", "a.m."),
+    ] {
         if let Some(head) = s.strip_suffix(suffix) {
             let head = head.trim_end_matches(['.', ':']);
             if !head.is_empty() {
@@ -186,7 +190,10 @@ fn parse_hm(num: &str) -> Option<(u32, u32)> {
         let min: u32 = m.trim_matches(|c: char| !c.is_ascii_digit()).parse().ok()?;
         return ((1..=12).contains(&hour) && min < 60).then_some((hour, min));
     }
-    let hour: u32 = num.trim_matches(|c: char| !c.is_ascii_digit()).parse().ok()?;
+    let hour: u32 = num
+        .trim_matches(|c: char| !c.is_ascii_digit())
+        .parse()
+        .ok()?;
     ((1..=12).contains(&hour)).then_some((hour, 0))
 }
 
@@ -202,7 +209,9 @@ fn parse_minutes_ampm(w: &str) -> Option<(u32, &'static str)> {
 }
 
 fn parse_hour(w: &str) -> Option<u32> {
-    let core = w.trim_end_matches('.').trim_matches(|c: char| !c.is_ascii_digit());
+    let core = w
+        .trim_end_matches('.')
+        .trim_matches(|c: char| !c.is_ascii_digit());
     let n: u32 = core.parse().ok()?;
     (1..=12).contains(&n).then_some(n)
 }
@@ -414,7 +423,10 @@ mod tests {
     #[test]
     fn spoken_email() {
         let out = clean("email is hello at localflow dot com");
-        assert!(out.to_ascii_lowercase().contains("hello@localflow.com"), "{out}");
+        assert!(
+            out.to_ascii_lowercase().contains("hello@localflow.com"),
+            "{out}"
+        );
     }
 
     #[test]

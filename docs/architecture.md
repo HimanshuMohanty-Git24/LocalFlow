@@ -9,7 +9,7 @@ never contacts a network service.
 Desktop UI (React + TypeScript + Tauri 2)
         │
         ▼
-Rust core (hotkeys, audio, VAD, state, injection, SQLite)
+Rust core (hotkeys, audio, VAD, state, injection, local JSON settings)
         │
         ├── whisper.cpp (ASR)
         └── llama.cpp + Qwen3-0.6B     — Phase 7
@@ -30,8 +30,9 @@ Implemented:
 - Missing GGUF skips the LLM and pastes rule-cleaned text
 - Thinking tags stripped; runaway rewrites discarded
 - llama.cpp logs disabled so prompts are not printed
-
-Not implemented yet: SQLite, vocabulary, installer.
+- Settings persist in `%LOCALAPPDATA%\LocalFlow\settings.json`
+- Optional text history and audio storage are off by default
+- Windows NSIS installer bundles Whisper and Silero models
 
 ## Phase 6
 
@@ -85,12 +86,14 @@ Implemented:
 
 - Global Ctrl+B push-to-talk on Windows (`WH_KEYBOARD_LL`)
 - **Short:** hold Ctrl+B to record, release B or Ctrl to stop
-- **Long:** tap Ctrl+B twice (B twice while Ctrl is down); recording continues until any key
+- **Long:** tap Ctrl+B twice (B twice while Ctrl is down); recording continues
+  until Space or Esc
 - Capture ring is 180 seconds; VAD only skips silence, it does not crop the take
 - Toggle mode uses the same chord (press to start, press to stop)
 - Only the B key is swallowed during the chord (Ctrl alone still works)
 - Floating click-through overlay (never focused) with a hover animation
-- Capture start/stop session (up to 180s ring); WAV written on release
+- Capture start/stop session (up to 180s ring); dictation stays in memory unless
+  audio saving is enabled
 - OS hook lives in `hotkey/windows.rs`; chord policy in `apply_ctrl_b`
 
 ## Phase 1
@@ -113,7 +116,8 @@ Implemented:
 - System tray (Open, Settings, Quit)
 - Close-to-tray (window hide, process stays running)
 - `tracing` logs via `LOCALFLOW_LOG` (no transcript fields)
-- In-memory settings (`preserve_clipboard` default on, history/audio off)
+- Initially in-memory settings (`preserve_clipboard` default on,
+  history/audio off); current builds persist them locally
 - Dictation `StateMachine` with typed `FlowEvent`s
 
 ## Modules
@@ -122,7 +126,7 @@ Implemented:
 | --- | --- |
 | `src-tauri/src/logging.rs` | `tracing` subscriber |
 | `src-tauri/src/tray.rs` | Tray icon and menu |
-| `src-tauri/src/config/` | Settings types |
+| `src-tauri/src/config/` | Settings types, local persistence, startup registration |
 | `src-tauri/src/state/` | `AppState` + `FlowEvent` machine |
 | `src-tauri/src/errors.rs` | `AppError` |
 | `src-tauri/src/audio/device.rs` | Microphone list + resolve |
@@ -137,9 +141,6 @@ Implemented:
 | `src-tauri/src/normalization/` | Deterministic filler + punctuation rules |
 | `src-tauri/src/vad/` | Silero VAD + speech crop |
 | `src-tauri/src/llm/` | Optional Qwen3-0.6B rewrite |
-
-Later phases add `vad/`, `llm/`, `normalization/`, `context/`,
-`injection/`, and `database/` behind traits.
 
 ## Contracts (to be filled in)
 

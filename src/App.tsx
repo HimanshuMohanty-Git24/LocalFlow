@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { getVersion } from "@tauri-apps/api/app";
 import { useEffect, useState } from "react";
 import { useSettings } from "./hooks/useSettings";
 import { AboutPage } from "./pages/About";
@@ -18,6 +19,7 @@ type Page = "dashboard" | SettingsSection | "about";
 
 export default function App() {
   const [page, setPage] = useState<Page>("dashboard");
+  const [version, setVersion] = useState("");
   const {
     settings,
     status,
@@ -31,6 +33,7 @@ export default function App() {
     save,
     recordTest,
     revealRecording,
+    openDataFolder,
     startLongListen,
     startShortListen,
     stopShortListen,
@@ -44,6 +47,10 @@ export default function App() {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    void getVersion().then(setVersion).catch(() => setVersion(""));
+  }, []);
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
@@ -115,7 +122,7 @@ export default function App() {
         </button>
         <div className="sidebar-spacer" />
         <div className="sidebar-foot">
-          <span>LocalFlow v0.1.1</span>
+          <span>LocalFlow{version ? " v" + version : ""}</span>
           <button
             type="button"
             className="nav-quiet"
@@ -155,9 +162,15 @@ export default function App() {
             recording={recording}
             lastRecording={lastRecording}
             onRevealRecording={(path) => void revealRecording(path)}
+            onOpenDataFolder={() => void openDataFolder()}
           />
         ) : null}
-        {page === "about" ? <AboutPage /> : null}
+        {page === "about" ? (
+          <AboutPage
+            version={version}
+            onOpenProductSite={() => void openProductSite()}
+          />
+        ) : null}
       </main>
     </div>
   );

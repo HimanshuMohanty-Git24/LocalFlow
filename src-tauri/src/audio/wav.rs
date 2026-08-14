@@ -17,7 +17,8 @@ pub fn write_pcm16_wav(
         return Err(AppError::message("invalid wav format"));
     }
 
-    let mut file = BufWriter::new(File::create(path).map_err(|e| AppError::message(e.to_string()))?);
+    let mut file =
+        BufWriter::new(File::create(path).map_err(|e| AppError::message(e.to_string()))?);
     let frames = samples.len() / channels as usize;
     let data_bytes = (frames * channels as usize * 2) as u32;
     let byte_rate = sample_rate * u32::from(channels) * 2;
@@ -80,7 +81,10 @@ mod tests {
         assert_eq!(&bytes[8..12], b"WAVE");
         assert_eq!(&bytes[20..22], &[1, 0]); // PCM
         assert_eq!(&bytes[22..24], &[1, 0]); // mono
-        assert_eq!(u32::from_le_bytes(bytes[24..28].try_into().unwrap()), 16_000);
+        assert_eq!(
+            u32::from_le_bytes(bytes[24..28].try_into().unwrap()),
+            16_000
+        );
         assert_eq!(bytes.len(), 44 + 8);
     }
 }

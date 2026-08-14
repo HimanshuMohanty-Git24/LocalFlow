@@ -1,4 +1,9 @@
-export function AboutPage() {
+type Props = {
+  version: string;
+  onOpenProductSite: () => void;
+};
+
+export function AboutPage({ version, onOpenProductSite }: Props) {
   return (
     <section className="page">
       <h1>About</h1>
@@ -8,6 +13,7 @@ export function AboutPage() {
       </p>
       <div className="card">
         <ul className="about-list">
+          {version ? <li>Version {version}</li> : null}
           <li>No cloud APIs</li>
           <li>No OpenAI</li>
           <li>No Ollama requirement</li>
@@ -15,11 +21,11 @@ export function AboutPage() {
           <li>MIT licensed</li>
         </ul>
       </div>
-      <p className="hint">
-        Website and Windows installer:
-        himanshumohanty-git24.github.io/LocalFlow — use the download icon in
-        the sidebar.
-      </p>
+      <div className="actions">
+        <button type="button" className="ghost" onClick={onOpenProductSite}>
+          Open website and Windows installer
+        </button>
+      </div>
     </section>
   );
 }

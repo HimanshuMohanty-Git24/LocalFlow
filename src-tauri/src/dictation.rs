@@ -14,16 +14,15 @@ use crate::asr::{SpeechRecognizer, TranscriptionOptions, WhisperBackend};
 use crate::audio::capture::{max_capture_seconds, CaptureSession};
 use crate::audio::resample::{to_whisper_mono16k, WHISPER_RATE};
 use crate::audio::MicTestResult;
-use crate::config::Settings;
+use crate::config::{HotkeyMode, Settings};
 use crate::errors::AppError;
-use crate::config::HotkeyMode;
 use crate::hotkey::{
     arm_long_listen, command_for_hotkey, decide_ptt, disarm_long_listen, CaptureCommand,
     HotkeyAction, ListenMode, PttEffect, DOUBLE_TAP_MS,
 };
+use crate::llm::QwenBackend;
 use crate::state::events::FlowEvent;
 use crate::state::StateMachine;
-use crate::llm::QwenBackend;
 use crate::vad::SileroVad;
 
 #[derive(Clone)]
@@ -125,7 +124,11 @@ fn run(app: AppHandle, rx: Receiver<WorkerMsg>, timeout_tx: SyncSender<WorkerMsg
                 }
             }
             WorkerMsg::Test { mic_id, reply } => {
-                let _ = reply.send(run_test(&worker.app, &mut worker.session, mic_id.as_deref()));
+                let _ = reply.send(run_test(
+                    &worker.app,
+                    &mut worker.session,
+                    mic_id.as_deref(),
+                ));
             }
         }
     }
@@ -278,31 +281,19 @@ fn stop_and_transcribe(
     asr: &mut WhisperBackend,
     vad: &mut SileroVad,
     llm: &mut QwenBackend,
-) -> Result<MicTestResult, AppError> {
+) -> Result<(), AppError> {
     let current = session
         .take()
         .ok_or_else(|| AppError::message("capture session missing"))?;
     let audio = match current.stop() {
         Ok(audio) if audio.duration_ms < 80 => {
             cancel_quiet(app);
-            return Ok(MicTestResult {
-                path: String::new(),
-                duration_ms: 0,
-                sample_rate: 0,
-                channels: 0,
-                frames: 0,
-            });
+            return Ok(());
         }
         Ok(audio) => audio,
         Err(err) if err.to_string().contains("no audio captured") => {
             cancel_quiet(app);
-            return Ok(MicTestResult {
-                path: String::new(),
-                duration_ms: 0,
-                sample_rate: 0,
-                channels: 0,
-                frames: 0,
-            });
+            return Ok(());
         }
         Err(err) => {
             fail_session(app, err.clone());
@@ -310,14 +301,30 @@ fn stop_and_transcribe(
         }
     };
 
-    let wav = match audio.save_wav() {
-        Ok(wav) => wav,
+    let save_audio = match settings_save_audio(app) {
+        Ok(enabled) => enabled,
         Err(err) => {
             fail_session(app, err.clone());
             return Err(err);
         }
     };
-    let _ = app.emit("recording-finished", wav.clone());
+    if save_audio {
+        let path = match crate::config::recording_path() {
+            Ok(path) => path,
+            Err(err) => {
+                fail_session(app, err.clone());
+                return Err(err);
+            }
+        };
+        let wav = match audio.save_wav_to(&path) {
+            Ok(wav) => wav,
+            Err(err) => {
+                fail_session(app, err.clone());
+                return Err(err);
+            }
+        };
+        let _ = app.emit("recording-finished", wav);
+    }
 
     let pcm = to_whisper_mono16k(&audio.samples, audio.sample_rate, audio.channels);
     let speech = match vad.extract_speech(&pcm, WHISPER_RATE) {
@@ -333,7 +340,7 @@ fn stop_and_transcribe(
         set_tray_tooltip(app, "LocalFlow Ready");
         let _ = app.emit("no-speech", true);
         crate::overlay::hide(app);
-        return Ok(wav);
+        return Ok(());
     };
 
     apply(app, FlowEvent::SpeechStarted)?;
@@ -364,8 +371,9 @@ fn stop_and_transcribe(
                 apply(app, FlowEvent::Reset)?;
                 set_tray_tooltip(app, "LocalFlow Ready");
                 schedule_overlay_hide(app.clone());
-                return Ok(wav);
+                return Ok(());
             }
+            save_history_if_enabled(app, &cleaned);
             set_tray_tooltip(app, "LocalFlow Inserting");
             let preserve = settings_preserve(app)?;
             match crate::injection::inject(&cleaned, preserve) {
@@ -374,7 +382,7 @@ fn stop_and_transcribe(
                     set_tray_tooltip(app, "LocalFlow Ready");
                     tracing::info!("injection finished");
                     schedule_overlay_hide(app.clone());
-                    Ok(wav)
+                    Ok(())
                 }
                 Err(err) => {
                     fail_session(app, err.clone());
@@ -403,6 +411,31 @@ fn settings_llm(app: &AppHandle) -> Result<bool, AppError> {
         .lock()
         .map_err(|_| AppError::LockPoisoned)?
         .llm_enabled)
+}
+
+fn settings_save_audio(app: &AppHandle) -> Result<bool, AppError> {
+    Ok(app
+        .state::<Mutex<Settings>>()
+        .lock()
+        .map_err(|_| AppError::LockPoisoned)?
+        .save_audio)
+}
+
+fn save_history_if_enabled(app: &AppHandle, text: &str) {
+    let settings = app.state::<Mutex<Settings>>();
+    let enabled = settings.lock().map(|settings| settings.save_text_history);
+    match enabled {
+        Ok(true) => {
+            if let Err(err) = crate::config::append_history(text) {
+                tracing::warn!(error = %err, "text history could not be saved");
+                let _ = app.emit("flow-error", err.to_string());
+            }
+        }
+        Ok(false) => {}
+        Err(_) => {
+            let _ = app.emit("flow-error", AppError::LockPoisoned.to_string());
+        }
+    }
 }
 
 fn cancel_quiet(app: &AppHandle) {

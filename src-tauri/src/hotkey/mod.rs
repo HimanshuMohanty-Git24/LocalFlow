@@ -47,7 +47,7 @@ pub const DOUBLE_TAP_MS: u128 = 1500;
 pub enum HotkeyAction {
     Press,
     Release,
-    /// Any key while long-listen is active, or the double-tap wait expired.
+    /// Space/Esc while long-listen is active, or the double-tap wait expired.
     StopNow,
 }
 
@@ -68,8 +68,12 @@ pub enum PttEffect {
     GoLong,
 }
 
-/// Short = hold Ctrl+B. Long = tap Ctrl+B twice, then any key stops.
-pub fn decide_ptt(mode: ListenMode, action: HotkeyAction, elapsed_ms: u128) -> (ListenMode, PttEffect) {
+/// Short = hold Ctrl+B. Long = tap Ctrl+B twice, then Space or Esc stops.
+pub fn decide_ptt(
+    mode: ListenMode,
+    action: HotkeyAction,
+    elapsed_ms: u128,
+) -> (ListenMode, PttEffect) {
     match (mode, action) {
         (ListenMode::Off, HotkeyAction::Press) => (ListenMode::Holding, PttEffect::Start),
         (ListenMode::Off, _) => (ListenMode::Off, PttEffect::None),
@@ -86,11 +90,15 @@ pub fn decide_ptt(mode: ListenMode, action: HotkeyAction, elapsed_ms: u128) -> (
         }
         (ListenMode::Holding, HotkeyAction::StopNow) => (ListenMode::Off, PttEffect::Stop),
 
-        (ListenMode::AwaitingSecondTap, HotkeyAction::Press) => (ListenMode::Long, PttEffect::GoLong),
+        (ListenMode::AwaitingSecondTap, HotkeyAction::Press) => {
+            (ListenMode::Long, PttEffect::GoLong)
+        }
         (ListenMode::AwaitingSecondTap, HotkeyAction::Release) => {
             (ListenMode::AwaitingSecondTap, PttEffect::None)
         }
-        (ListenMode::AwaitingSecondTap, HotkeyAction::StopNow) => (ListenMode::Off, PttEffect::Stop),
+        (ListenMode::AwaitingSecondTap, HotkeyAction::StopNow) => {
+            (ListenMode::Off, PttEffect::Stop)
+        }
 
         (ListenMode::Long, HotkeyAction::StopNow) => (ListenMode::Off, PttEffect::Stop),
         (ListenMode::Long, _) => (ListenMode::Long, PttEffect::None),
@@ -259,7 +267,10 @@ mod tests {
     fn quick_double_tap_enters_long_listen() {
         let (mode, _) = decide_ptt(ListenMode::Off, HotkeyAction::Press, 0);
         let (mode, effect) = decide_ptt(mode, HotkeyAction::Release, 80);
-        assert_eq!((mode, effect), (ListenMode::AwaitingSecondTap, PttEffect::None));
+        assert_eq!(
+            (mode, effect),
+            (ListenMode::AwaitingSecondTap, PttEffect::None)
+        );
         let (mode, effect) = decide_ptt(mode, HotkeyAction::Press, 200);
         assert_eq!((mode, effect), (ListenMode::Long, PttEffect::GoLong));
         let (mode, effect) = decide_ptt(mode, HotkeyAction::Release, 250);
