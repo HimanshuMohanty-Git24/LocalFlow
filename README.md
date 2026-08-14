@@ -23,7 +23,7 @@
     <img src="https://img.shields.io/github/downloads/HimanshuMohanty-Git24/LocalFlow/total" alt="Downloads" />
   </a>
   <a href="LICENSE">
-    <img src="https://img.shields.io/github/license/HimanshuMohanty-Git24/LocalFlow" alt="MIT License" />
+    <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
   </a>
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?logo=windows&logoColor=white" alt="Windows" />
   <img src="https://img.shields.io/badge/privacy-100%25%20offline-5EEAD4" alt="100% offline" />
