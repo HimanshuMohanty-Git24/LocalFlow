@@ -215,13 +215,18 @@ pub fn run() {
     logging::init();
     tracing::info!("LocalFlow starting (phase 7)");
 
-    let initial_settings = match config::load() {
-        Ok(settings) => settings,
+    let (initial_settings, settings_loaded) = match config::load() {
+        Ok(settings) => (settings, true),
         Err(err) => {
             tracing::warn!(error = %err, "saved settings unavailable; using private defaults");
-            Settings::default()
+            (Settings::default(), false)
         }
     };
+    if settings_loaded {
+        if let Err(err) = config::autostart::set_enabled(initial_settings.start_on_login) {
+            tracing::warn!(error = %err, "could not sync Windows startup registration");
+        }
+    }
 
     let result = tauri::Builder::default()
         .manage(Mutex::new(initial_settings))
