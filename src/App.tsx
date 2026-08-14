@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
 import { useSettings } from "./hooks/useSettings";
@@ -26,6 +27,15 @@ export default function App() {
     startShortListen,
     stopShortListen,
   } = useSettings();
+
+  const openProductSite = async () => {
+    try {
+      await invoke("open_product_site");
+    } catch (err) {
+      setPage("about");
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
@@ -68,6 +78,13 @@ export default function App() {
           onClick={() => setPage("about")}
         >
           About
+        </button>
+        <button
+          type="button"
+          className="nav-external"
+          onClick={() => void openProductSite()}
+        >
+          Download
         </button>
       </nav>
       <main>

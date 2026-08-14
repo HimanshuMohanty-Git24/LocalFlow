@@ -13,6 +13,11 @@ export function AboutPage() {
         <li>No Python runtime in the shipped app</li>
         <li>MIT licensed</li>
       </ul>
+      <p className="lede">
+        Website and Windows installer:
+        himanshumohanty-git24.github.io/LocalFlow — use Download in the
+        sidebar.
+      </p>
     </section>
   );
 }

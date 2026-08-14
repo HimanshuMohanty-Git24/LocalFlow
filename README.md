@@ -13,6 +13,9 @@
   <a href="https://github.com/HimanshuMohanty-Git24/LocalFlow/actions/workflows/ci.yml">
     <img src="https://github.com/HimanshuMohanty-Git24/LocalFlow/actions/workflows/ci.yml/badge.svg" alt="CI" />
   </a>
+  <a href="https://himanshumohanty-git24.github.io/LocalFlow/">
+    <img src="https://img.shields.io/badge/website-live-5EEAD4" alt="Website" />
+  </a>
   <a href="https://github.com/HimanshuMohanty-Git24/LocalFlow/releases/latest">
     <img src="https://img.shields.io/github/v/release/HimanshuMohanty-Git24/LocalFlow" alt="Latest release" />
   </a>
@@ -32,7 +35,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/HimanshuMohanty-Git24/LocalFlow/releases/latest"><strong>Download for Windows</strong></a>
+  <a href="https://himanshumohanty-git24.github.io/LocalFlow/"><strong>Download for Windows</strong></a>
   ·
   <a href="docs/install.md">Install guide</a>
   ·
@@ -55,7 +58,7 @@ LocalFlow is a desktop dictation app: hold a hotkey, speak, and cleaned text is 
 
 ## Install
 
-1. Download **`LocalFlow_*_x64-setup.exe`** from [Releases](https://github.com/HimanshuMohanty-Git24/LocalFlow/releases/latest).
+1. Download from the [product site](https://himanshumohanty-git24.github.io/LocalFlow/) (always the latest NSIS `.exe`) or from [Releases](https://github.com/HimanshuMohanty-Git24/LocalFlow/releases/latest).
 2. Run the installer (your user only — no administrator prompt).
 3. If Windows SmartScreen warns that the app is unsigned, choose **More info** → **Run anyway**.
 4. Click a text field, hold **Ctrl+B**, speak, release.

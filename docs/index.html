@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LocalFlow — Offline dictation for Windows</title>
+    <meta
+      name="description"
+      content="Speak, and cleaned text lands in the focused app. Whisper runs on this PC. Nothing is sent to the cloud."
+    />
+    <link rel="icon" type="image/png" href="assets/logo.png" />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <a class="brand" href="./">
+        <img src="assets/logo.png" width="36" height="36" alt="" />
+        LocalFlow
+      </a>
+      <nav>
+        <a href="#how">How it works</a>
+        <a href="#privacy">Privacy</a>
+        <a
+          class="btn btn-primary"
+          id="download-nav"
+          href="https://github.com/HimanshuMohanty-Git24/LocalFlow/releases/download/v0.1.0/LocalFlow_0.1.0_x64-setup.exe"
+          >Download for Windows</a
+        >
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">Windows · 100% offline</p>
+        <h1>Dictate anywhere.<br />Speech never leaves this PC.</h1>
+        <p class="lede">
+          Hold Ctrl+B, speak, and cleaned text pastes into the app you are
+          already using. Recognition runs with whisper.cpp on-device. No
+          account. No telemetry. No cloud API.
+        </p>
+        <div class="cta">
+          <a
+            class="btn btn-primary btn-lg"
+            id="download-hero"
+            href="https://github.com/HimanshuMohanty-Git24/LocalFlow/releases/download/v0.1.0/LocalFlow_0.1.0_x64-setup.exe"
+            >Download for Windows</a
+          >
+          <a
+            class="btn btn-ghost"
+            href="https://github.com/HimanshuMohanty-Git24/LocalFlow"
+            >View source</a
+          >
+        </div>
+        <p class="fine" id="download-status">
+          Current-user installer · no admin · unsigned until we add a
+          certificate (SmartScreen may warn)
+        </p>
+      </section>
+
+      <section class="grid" id="features">
+        <article>
+          <h2>Push to talk</h2>
+          <p>Hold Ctrl+B, speak, release. Text lands in the focused window.</p>
+        </article>
+        <article>
+          <h2>Long listen</h2>
+          <p>Press Ctrl+B twice for longer takes. Space or Esc to stop.</p>
+        </article>
+        <article>
+          <h2>On-device Whisper</h2>
+          <p>base.en and Silero VAD ship in the installer. No download at first run.</p>
+        </article>
+        <article>
+          <h2>Rules before AI</h2>
+          <p>Fillers, times, and vocabulary are cleaned locally even without Qwen.</p>
+        </article>
+      </section>
+
+      <section id="how">
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li>Install the NSIS <code>.exe</code> for your Windows user.</li>
+          <li>Click a text field in any app.</li>
+          <li>Hold <kbd>Ctrl</kbd>+<kbd>B</kbd> and speak.</li>
+          <li>Release. Cleaned text is pasted. The mic is not left open.</li>
+        </ol>
+      </section>
+
+      <section id="privacy">
+        <h2>Privacy, by default</h2>
+        <p class="lede">
+          Audio, transcripts, and clipboard contents are never uploaded. History
+          and recordings stay off unless you turn them on. There is no Ollama,
+          no OpenAI, and no Python runtime in the shipped app.
+        </p>
+      </section>
+
+      <section id="qwen">
+        <h2>Optional local Qwen</h2>
+        <p class="lede">
+          Want extra punctuation cleanup? Download
+          <code>Qwen3-0.6B-Q8_0.gguf</code> in a browser, copy it to
+          <code>%LOCALAPPDATA%\LocalFlow\models</code>, then restart. LocalFlow
+          never fetches models itself.
+        </p>
+        <p>
+          <a href="https://github.com/HimanshuMohanty-Git24/LocalFlow/blob/main/docs/install.md">Full Qwen setup</a>
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>MIT · <a href="https://github.com/HimanshuMohanty-Git24/LocalFlow">GitHub</a></p>
+    </footer>
+
+    <script>
+      (function () {
+        var api =
+          "https://api.github.com/repos/HimanshuMohanty-Git24/LocalFlow/releases/latest";
+        var fallback =
+          "https://github.com/HimanshuMohanty-Git24/LocalFlow/releases/download/v0.1.0/LocalFlow_0.1.0_x64-setup.exe";
+        var statusEl = document.getElementById("download-status");
+
+        function pickAsset(assets) {
+          if (!assets) return null;
+          for (var i = 0; i < assets.length; i++) {
+            if (/-setup\.exe$/i.test(assets[i].name)) return assets[i];
+          }
+          for (var j = 0; j < assets.length; j++) {
+            var n = assets[j].name;
+            if (/\.exe$/i.test(n) && !/\.sig$/i.test(n) && !/nsis\.zip/i.test(n))
+              return assets[j];
+          }
+          return null;
+        }
+
+        function downloadLatest(event) {
+          event.preventDefault();
+          var btn = event.currentTarget;
+          fetch(api, { headers: { Accept: "application/vnd.github+json" } })
+            .then(function (res) {
+              if (!res.ok) throw new Error("release lookup failed");
+              return res.json();
+            })
+            .then(function (data) {
+              var asset = pickAsset(data.assets);
+              var url = asset && asset.browser_download_url;
+              if (!url) throw new Error("installer missing");
+              if (statusEl && data.tag_name) {
+                statusEl.textContent =
+                  "Downloading LocalFlow " + data.tag_name + " · " + asset.name;
+              }
+              window.location.assign(url);
+            })
+            .catch(function () {
+              window.location.assign(btn.getAttribute("href") || fallback);
+            });
+        }
+
+        ["download-hero", "download-nav"].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.addEventListener("click", downloadLatest);
+        });
+      })();
+    </script>
+  </body>
+</html>
