@@ -39,8 +39,46 @@ pub struct AppStatus {
     pub offline: bool,
 }
 
+/// Public product page (GitHub Pages). Download lives there.
+const PRODUCT_SITE_URL: &str = "https://himanshumohanty-git24.github.io/LocalFlow/";
+
 fn lock_poisoned<T>(_: std::sync::PoisonError<T>) -> AppError {
     AppError::LockPoisoned
+}
+
+#[tauri::command]
+fn open_product_site() -> Result<(), AppError> {
+    open_https(PRODUCT_SITE_URL)
+}
+
+fn open_https(url: &str) -> Result<(), AppError> {
+    #[cfg(windows)]
+    {
+        use windows::core::w;
+        use windows::Win32::UI::Shell::ShellExecuteW;
+        use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
+
+        let wide: Vec<u16> = url.encode_utf16().chain(std::iter::once(0)).collect();
+        let result = unsafe {
+            ShellExecuteW(
+                None,
+                w!("open"),
+                windows::core::PCWSTR(wide.as_ptr()),
+                None,
+                None,
+                SW_SHOWNORMAL,
+            )
+        };
+        if result.0 as isize <= 32 {
+            return Err(AppError::message("could not open the download page"));
+        }
+        Ok(())
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = url;
+        Err(AppError::message("opening the site is Windows-only"))
+    }
 }
 
 #[tauri::command]
@@ -160,7 +198,8 @@ pub fn run() {
             reveal_recording,
             start_long_listen,
             start_short_listen,
-            stop_short_listen
+            stop_short_listen,
+            open_product_site
         ])
         .setup(|app| {
             if let Err(err) = tray::setup(app.handle()) {
@@ -210,5 +249,15 @@ pub fn run() {
     if let Err(err) = result {
         tracing::error!(error = %err, "tauri exited with error");
         std::process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::PRODUCT_SITE_URL;
+
+    #[test]
+    fn product_site_is_github_pages() {
+        assert!(PRODUCT_SITE_URL.starts_with("https://himanshumohanty-git24.github.io/LocalFlow"));
     }
 }

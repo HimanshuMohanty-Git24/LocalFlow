@@ -61,6 +61,12 @@ nav button:hover {
   background: #2a6f97;
 }
 
+nav button.nav-external {
+  color: #5eead4;
+  background: transparent;
+  border: 1px solid #2a6f97;
+}
+
 main {
   padding: 28px 32px 48px;
 }
