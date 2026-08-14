@@ -29,6 +29,21 @@ nav {
   border-right: 1px solid #243041;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 16px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.brand img {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
 nav button,
 main button {
   border: 0;

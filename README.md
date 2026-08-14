@@ -1,25 +1,99 @@
-# LocalFlow
+<p align="center">
+  <img src="docs/assets/logo.png" width="128" height="128" alt="LocalFlow icon" />
+</p>
 
-Completely offline voice dictation for Windows. Speech stays on this PC.
-Nothing is sent to a cloud API.
+<h1 align="center">LocalFlow</h1>
 
-Phase 7 can optionally rewrite the cleaned transcript with local
-Qwen3-0.6B (llama.cpp, CPU). No cloud. Place GGUF files in `models/`;
-see [docs/models.md](docs/models.md).
+<p align="center">
+  <strong>Offline voice dictation for Windows.</strong><br />
+  Speak anywhere. Text stays on this PC. Nothing is sent to the cloud.
+</p>
 
-## Requirements (development)
+<p align="center">
+  <a href="https://github.com/HimanshuMohanty-Git24/LocalFlow/actions/workflows/ci.yml">
+    <img src="https://github.com/HimanshuMohanty-Git24/LocalFlow/actions/workflows/ci.yml/badge.svg" alt="CI" />
+  </a>
+  <a href="https://github.com/HimanshuMohanty-Git24/LocalFlow/releases/latest">
+    <img src="https://img.shields.io/github/v/release/HimanshuMohanty-Git24/LocalFlow" alt="Latest release" />
+  </a>
+  <a href="https://github.com/HimanshuMohanty-Git24/LocalFlow/releases">
+    <img src="https://img.shields.io/github/downloads/HimanshuMohanty-Git24/LocalFlow/total" alt="Downloads" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/github/license/HimanshuMohanty-Git24/LocalFlow" alt="MIT License" />
+  </a>
+  <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?logo=windows&logoColor=white" alt="Windows" />
+  <img src="https://img.shields.io/badge/privacy-100%25%20offline-5EEAD4" alt="100% offline" />
+  <img src="https://img.shields.io/badge/Tauri-2-FFC131?logo=tauri&logoColor=black" alt="Tauri 2" />
+  <img src="https://img.shields.io/badge/Rust-stable-000000?logo=rust" alt="Rust" />
+  <a href="https://github.com/HimanshuMohanty-Git24/LocalFlow/stargazers">
+    <img src="https://img.shields.io/github/stars/HimanshuMohanty-Git24/LocalFlow?style=social" alt="GitHub stars" />
+  </a>
+</p>
 
-- Windows 10/11 x64
-- Node.js 20+
-- Rust (stable, MSVC toolchain)
-- Visual Studio 2022 Build Tools with the C++ workload
-- WebView2 (usually already installed on Windows 11)
-- A working microphone for capture tests
-- CMake (for compiling whisper.cpp)
-- LLVM / Clang (bindgen for whisper-rs on Windows)
-- A local Whisper ggml file in `models/` (tiny.en is enough to try)
+<p align="center">
+  <a href="https://github.com/HimanshuMohanty-Git24/LocalFlow/releases/latest"><strong>Download for Windows</strong></a>
+  ·
+  <a href="docs/install.md">Install guide</a>
+  ·
+  <a href="docs/privacy.md">Privacy</a>
+</p>
 
-## Run
+---
+
+LocalFlow is a desktop dictation app: hold a hotkey, speak, and cleaned text is pasted into the focused window. Recognition runs with **whisper.cpp** on-device. Optional punctuation cleanup can use a local **Qwen** GGUF. There is no account, no telemetry, and no network call for speech.
+
+## Features
+
+- **Fully offline** — audio, transcripts, and clipboard never leave the machine
+- **Push-to-talk** — hold `Ctrl+B`, speak, release
+- **Long listen** — press `Ctrl+B` twice; stop with Space or Esc
+- **System tray** — stays out of the way; quit from the tray menu
+- **Current-user installer** — NSIS `.exe`, no admin required
+- **Whisper included** — `base.en` plus Silero VAD ship in the installer
+- **Optional local LLM** — drop in Qwen for extra cleanup; rules still run without it
+
+## Install
+
+1. Download **`LocalFlow_*_x64-setup.exe`** from [Releases](https://github.com/HimanshuMohanty-Git24/LocalFlow/releases/latest).
+2. Run the installer (your user only — no administrator prompt).
+3. If Windows SmartScreen warns that the app is unsigned, choose **More info** → **Run anyway**.
+4. Click a text field, hold **Ctrl+B**, speak, release.
+
+Full first-run steps, including optional Qwen: [docs/install.md](docs/install.md).
+
+## Usage
+
+| Action | How |
+| --- | --- |
+| Short dictation | Hold `Ctrl+B` (≥ ~280 ms), speak, release |
+| Long dictation | `Ctrl+B` twice, speak, then Space or Esc |
+| Hide window | Close the dashboard (app stays in the tray) |
+| Quit | Tray icon → **Quit** |
+
+Silence is skipped. Built-in rules clean fillers, punctuation, times, and vocabulary before paste.
+
+## Optional Qwen (AI cleanup)
+
+The installer does **not** include Qwen (~610 MB). Dictation works without it.
+
+1. Create `%LOCALAPPDATA%\LocalFlow\models`
+2. Download [`Qwen3-0.6B-Q8_0.gguf`](https://huggingface.co/Qwen/Qwen3-0.6B-GGUF)
+3. Copy the file into that folder (filename must contain `qwen`)
+4. Quit LocalFlow from the tray and reopen it
+5. Keep **AI cleanup with local Qwen (offline)** enabled in Settings
+
+Needs about 8 GB RAM. Details: [docs/install.md](docs/install.md) and [docs/models.md](docs/models.md).
+
+## Privacy
+
+No accounts. No cloud APIs. No OpenAI. No Ollama requirement. No Python runtime in the shipped app. Audio and text history are off by default and never written to logs.
+
+See [docs/privacy.md](docs/privacy.md).
+
+## Development
+
+Requires Windows 10/11 x64, Node.js 20+, Rust (MSVC), VS 2022 C++ Build Tools, CMake, LLVM/Clang, and a Whisper ggml file in `models/` for dictation tests.
 
 ```bash
 npm install
@@ -27,40 +101,21 @@ npm run test:rust
 npm run tauri dev
 ```
 
-Optional verbose logs:
+Verbose logs:
 
 ```powershell
 $env:LOCALFLOW_LOG = "debug"
 npm run tauri dev
 ```
 
-The app lives in the system tray. Closing the window hides it; use **Quit**
-in the tray menu to exit.
+`main` only accepts pull requests. CI must pass. New installers are built by tagging `v*` (for example `git tag v0.1.1 && git push origin v0.1.1`).
 
-## Install (Windows)
+More: [CONTRIBUTING.md](CONTRIBUTING.md), [docs/architecture.md](docs/architecture.md).
 
-Download the latest **NSIS installer** (`.exe`) from
-[Releases](https://github.com/HimanshuMohanty-Git24/LocalFlow/releases).
-It is a current-user install (no admin). Whisper `base.en` is included.
+## License
 
-Windows SmartScreen may warn because the installer is not yet code-signed.
+[MIT](LICENSE) © 2026 LocalFlow
 
-After install, see [docs/install.md](docs/install.md) for first use and how
-to add optional local Qwen (AI cleanup) into
-`%LOCALAPPDATA%\LocalFlow\models`.
+## Star History
 
-## Releases
-
-Push a version tag to build and publish the installer:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-`main` only accepts pull requests. Do not push commits directly to `main`.
-
-## Privacy
-
-See [docs/privacy.md](docs/privacy.md). Audio, transcripts, and telemetry are
-never sent anywhere.
+[![Star History Chart](https://api.star-history.com/svg?repos=HimanshuMohanty-Git24/LocalFlow&type=Date)](https://www.star-history.com/#HimanshuMohanty-Git24/LocalFlow&Date)

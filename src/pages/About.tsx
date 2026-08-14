@@ -11,6 +11,7 @@ export function AboutPage() {
         <li>No OpenAI</li>
         <li>No Ollama requirement</li>
         <li>No Python runtime in the shipped app</li>
+        <li>MIT licensed</li>
       </ul>
     </section>
   );

@@ -44,6 +44,10 @@ export default function App() {
   return (
     <div className="shell">
       <nav>
+        <div className="brand">
+          <img src="/logo.png" width="32" height="32" alt="" />
+          <span>LocalFlow</span>
+        </div>
         <button
           type="button"
           className={page === "dashboard" ? "active" : ""}
