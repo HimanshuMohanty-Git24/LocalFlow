@@ -22,12 +22,12 @@ pub fn spawn() -> Result<(Receiver<HotkeyAction>, HotkeyGuard), AppError> {
     {
         let hook = super::windows::install(tx)?;
         tracing::info!("hotkey listener ready (Ctrl+B)");
-        return Ok((
+        Ok((
             rx,
             HotkeyGuard {
                 inner: Some(PlatformGuard { _hook: hook }),
             },
-        ));
+        ))
     }
     #[cfg(not(windows))]
     {

@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   AppStatus,
   AppState,
@@ -21,6 +21,7 @@ export function useSettings() {
   );
   const [lastTranscript, setLastTranscript] = useState<string | null>(null);
   const [lastCleaned, setLastCleaned] = useState<string | null>(null);
+  const savingRef = useRef(false);
 
   const refresh = useCallback(async () => {
     try {
@@ -58,6 +59,7 @@ export function useSettings() {
       setLastRecording(event.payload);
     }).then((fn) => unlisteners.push(fn));
     void listen("transcript-reset", () => {
+      setLastRecording(null);
       setLastTranscript(null);
       setLastCleaned(null);
     }).then((fn) => unlisteners.push(fn));
@@ -89,6 +91,9 @@ export function useSettings() {
   }, []);
 
   const save = useCallback(async (next: Settings) => {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSettings(next);
     setSaving(true);
     try {
       const saved = await invoke<Settings>("update_settings", { next });
@@ -97,11 +102,14 @@ export function useSettings() {
       setStatus(nextStatus);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      const message = err instanceof Error ? err.message : String(err);
+      await refresh();
+      setError(message);
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
-  }, []);
+  }, [refresh]);
 
   const recordTest = useCallback(async () => {
     setRecording(true);
@@ -121,6 +129,14 @@ export function useSettings() {
   const revealRecording = useCallback(async (path: string) => {
     try {
       await invoke("reveal_recording", { path });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  }, []);
+
+  const openDataFolder = useCallback(async () => {
+    try {
+      await invoke("open_data_folder");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -164,6 +180,7 @@ export function useSettings() {
     save,
     recordTest,
     revealRecording,
+    openDataFolder,
     startLongListen,
     startShortListen,
     stopShortListen,

@@ -52,13 +52,9 @@ impl RingBuffer {
         if n == 0 {
             return 0;
         }
-        let start = if self.len == self.cap {
-            self.write
-        } else {
-            0
-        };
-        for i in 0..n {
-            out[i] = self.buf[(start + i) % self.cap];
+        let start = if self.len == self.cap { self.write } else { 0 };
+        for (i, item) in out.iter_mut().enumerate().take(n) {
+            *item = self.buf[(start + i) % self.cap];
         }
         n
     }

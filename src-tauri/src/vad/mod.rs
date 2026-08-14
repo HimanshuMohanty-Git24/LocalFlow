@@ -1,6 +1,7 @@
 //! Voice activity detection. Silero via whisper.cpp.
 
-pub mod crop;
+#[cfg(test)]
+mod crop;
 pub mod silero;
 
 pub use silero::SileroVad;

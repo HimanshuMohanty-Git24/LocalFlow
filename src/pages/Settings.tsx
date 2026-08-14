@@ -13,6 +13,7 @@ type Props = {
   onChange: (next: Settings) => void;
   onRecordTest: () => void;
   onRevealRecording: (path: string) => void;
+  onOpenDataFolder: () => void;
 };
 
 const TITLES: Record<SettingsSection, string> = {
@@ -31,12 +32,13 @@ export function SettingsPage({
   onChange,
   onRecordTest,
   onRevealRecording,
+  onOpenDataFolder,
 }: Props) {
   return (
     <section className="page">
       <h1>{TITLES[section]}</h1>
       <p className="lede">
-        These values stay on this PC. They are not persisted after quit yet.
+        Saved automatically on this PC. Nothing is synced to a cloud service.
       </p>
 
       {section === "general" ? (
@@ -49,6 +51,7 @@ export function SettingsPage({
               </span>
             </div>
             <select
+              disabled={saving}
               value={settings.microphone_id}
               onChange={(event) =>
                 onChange({ ...settings, microphone_id: event.target.value })
@@ -86,6 +89,7 @@ export function SettingsPage({
               </span>
             </div>
             <select
+              disabled={saving}
               value={settings.hotkey_mode}
               onChange={(event) =>
                 onChange({
@@ -117,7 +121,7 @@ export function SettingsPage({
               >
                 {recording ? "Recording…" : "Record"}
               </button>
-              {lastRecording ? (
+              {lastRecording?.path ? (
                 <button
                   type="button"
                   className="ghost"
@@ -139,12 +143,13 @@ export function SettingsPage({
               <div className="setting-copy">
                 <span className="setting-title">Launch app at login</span>
                 <span className="setting-desc">
-                  Start LocalFlow when you sign in to Windows. Not wired yet.
+                  Start LocalFlow when you sign in to Windows.
                 </span>
               </div>
               <Toggle
                 on={settings.start_on_login}
                 label="Launch app at login"
+                disabled={saving}
                 onChange={(start_on_login) =>
                   onChange({ ...settings, start_on_login })
                 }
@@ -160,6 +165,7 @@ export function SettingsPage({
               <Toggle
                 on={settings.preserve_clipboard}
                 label="Preserve clipboard"
+                disabled={saving}
                 onChange={(preserve_clipboard) =>
                   onChange({ ...settings, preserve_clipboard })
                 }
@@ -178,6 +184,7 @@ export function SettingsPage({
               <Toggle
                 on={settings.llm_enabled}
                 label="AI cleanup"
+                disabled={saving}
                 onChange={(llm_enabled) =>
                   onChange({ ...settings, llm_enabled })
                 }
@@ -194,46 +201,61 @@ export function SettingsPage({
       ) : null}
 
       {section === "privacy" ? (
-        <div className="card">
-          <div className="setting-row">
-            <div className="setting-copy">
-              <span className="setting-title">Network</span>
-              <span className="setting-desc">
-                Audio, transcripts, and settings never leave this machine. There
-                is no account and no cloud sync.
-              </span>
+        <>
+          <div className="card">
+            <div className="setting-row">
+              <div className="setting-copy">
+                <span className="setting-title">Network</span>
+                <span className="setting-desc">
+                  Audio, transcripts, and settings never leave this machine.
+                  There is no account and no cloud sync.
+                </span>
+              </div>
+              <span className="badge">Offline</span>
             </div>
-            <span className="badge">Offline</span>
-          </div>
-          <div className="setting-row">
-            <div className="setting-copy">
-              <span className="setting-title">Save text history</span>
-              <span className="setting-desc">
-                Keep recent transcripts on disk. Off by default.
-              </span>
+            <div className="setting-row">
+              <div className="setting-copy">
+                <span className="setting-title">Save text history</span>
+                <span className="setting-desc">
+                  Append completed dictations to{" "}
+                  <code>%LOCALAPPDATA%\LocalFlow\history.jsonl</code>. Off by
+                  default.
+                </span>
+              </div>
+              <Toggle
+                on={settings.save_text_history}
+                label="Save text history"
+                disabled={saving}
+                onChange={(save_text_history) =>
+                  onChange({ ...settings, save_text_history })
+                }
+              />
             </div>
-            <Toggle
-              on={settings.save_text_history}
-              label="Save text history"
-              onChange={(save_text_history) =>
-                onChange({ ...settings, save_text_history })
-              }
-            />
-          </div>
-          <div className="setting-row">
-            <div className="setting-copy">
-              <span className="setting-title">Save audio recordings</span>
-              <span className="setting-desc">
-                Keep dictation WAVs on this PC. Off by default.
-              </span>
+            <div className="setting-row">
+              <div className="setting-copy">
+                <span className="setting-title">Save audio recordings</span>
+                <span className="setting-desc">
+                  Keep dictation WAVs in{" "}
+                  <code>%LOCALAPPDATA%\LocalFlow\recordings</code>. Off by
+                  default; otherwise dictation audio stays in memory only.
+                </span>
+              </div>
+              <Toggle
+                on={settings.save_audio}
+                label="Save audio recordings"
+                disabled={saving}
+                onChange={(save_audio) =>
+                  onChange({ ...settings, save_audio })
+                }
+              />
             </div>
-            <Toggle
-              on={settings.save_audio}
-              label="Save audio recordings"
-              onChange={(save_audio) => onChange({ ...settings, save_audio })}
-            />
           </div>
-        </div>
+          <div className="actions privacy-actions">
+            <button type="button" className="ghost" onClick={onOpenDataFolder}>
+              Open LocalFlow data folder
+            </button>
+          </div>
+        </>
       ) : null}
 
       {saving ? <p className="saving">Saving…</p> : null}

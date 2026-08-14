@@ -68,7 +68,10 @@ mod tests {
                 end_sample: 8,
             },
         ];
-        assert_eq!(crop_first_to_last(&samples, &spans), vec![2.0, 3.0, 4.0, 5.0, 6.0, 7.0]);
+        assert_eq!(
+            crop_first_to_last(&samples, &spans),
+            vec![2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+        );
     }
 
     #[test]

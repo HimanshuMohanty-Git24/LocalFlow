@@ -51,6 +51,24 @@ fn open_product_site() -> Result<(), AppError> {
     open_https(PRODUCT_SITE_URL)
 }
 
+#[tauri::command]
+fn open_data_folder() -> Result<(), AppError> {
+    let dir = config::ensure_app_data_dir()?;
+    #[cfg(windows)]
+    {
+        std::process::Command::new("explorer")
+            .arg(&dir)
+            .spawn()
+            .map_err(|_| AppError::message("could not open the LocalFlow data folder"))?;
+        Ok(())
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = dir;
+        Err(AppError::message("opening the data folder is Windows-only"))
+    }
+}
+
 fn open_https(url: &str) -> Result<(), AppError> {
     #[cfg(windows)]
     {
@@ -110,6 +128,17 @@ fn update_settings(
     next: Settings,
     settings: tauri::State<'_, Mutex<Settings>>,
 ) -> Result<Settings, AppError> {
+    let previous_start_on_login = settings.lock().map_err(lock_poisoned)?.start_on_login;
+    let startup_changed = next.start_on_login != previous_start_on_login;
+    if startup_changed {
+        config::autostart::set_enabled(next.start_on_login)?;
+    }
+    if let Err(err) = config::save(&next) {
+        if startup_changed {
+            let _ = config::autostart::set_enabled(previous_start_on_login);
+        }
+        return Err(err);
+    }
     let mut current = settings.lock().map_err(lock_poisoned)?;
     *current = next;
     tracing::info!(
@@ -118,6 +147,7 @@ fn update_settings(
         start_on_login = current.start_on_login,
         preserve_clipboard = current.preserve_clipboard,
         save_text_history = current.save_text_history,
+        save_audio = current.save_audio,
         llm_enabled = current.llm_enabled,
         "settings updated"
     );
@@ -185,8 +215,21 @@ pub fn run() {
     logging::init();
     tracing::info!("LocalFlow starting (phase 7)");
 
+    let (initial_settings, settings_loaded) = match config::load() {
+        Ok(settings) => (settings, true),
+        Err(err) => {
+            tracing::warn!(error = %err, "saved settings unavailable; using private defaults");
+            (Settings::default(), false)
+        }
+    };
+    if settings_loaded {
+        if let Err(err) = config::autostart::set_enabled(initial_settings.start_on_login) {
+            tracing::warn!(error = %err, "could not sync Windows startup registration");
+        }
+    }
+
     let result = tauri::Builder::default()
-        .manage(Mutex::new(Settings::default()))
+        .manage(Mutex::new(initial_settings))
         .manage(Mutex::new(StateMachine::new()))
         .manage(Mutex::new(AsrStatus::default()))
         .invoke_handler(tauri::generate_handler![
@@ -199,7 +242,8 @@ pub fn run() {
             start_long_listen,
             start_short_listen,
             stop_short_listen,
-            open_product_site
+            open_product_site,
+            open_data_folder
         ])
         .setup(|app| {
             if let Err(err) = tray::setup(app.handle()) {

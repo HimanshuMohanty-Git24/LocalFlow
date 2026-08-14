@@ -10,7 +10,13 @@ pub fn strip_think(text: &str) -> String {
     if let Some(idx) = t.rfind("</think>") {
         t = t[idx + "</think>".len()..].trim().to_string();
     }
-    for marker in ["<|im_end|>", "<|im_start|>", "<|endoftext|>", "<think>", "</think>"] {
+    for marker in [
+        "<|im_end|>",
+        "<|im_start|>",
+        "<|endoftext|>",
+        "<think>",
+        "</think>",
+    ] {
         t = t.replace(marker, "");
     }
     t.trim().to_string()
@@ -48,7 +54,10 @@ pub fn accept_rewrite(original: &str, candidate: &str) -> Option<String> {
     }
     if orig_words.len() >= 4 {
         let hay = out.to_ascii_lowercase();
-        let hits = orig_words.iter().filter(|w| hay.contains(w.as_str())).count();
+        let hits = orig_words
+            .iter()
+            .filter(|w| hay.contains(w.as_str()))
+            .count();
         if hits * 2 < orig_words.len() {
             return None;
         }

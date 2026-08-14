@@ -1,5 +1,4 @@
-//! Dictation state machine. ASR is not wired in Phase 0; transitions are still
-//! enforced so later phases cannot skip states.
+//! Dictation state machine. Pipeline stages cannot skip required transitions.
 
 use super::events::FlowEvent;
 use crate::errors::AppError;

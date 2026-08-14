@@ -36,7 +36,7 @@ mod tests {
 
     #[test]
     fn default_filter_is_info() {
-        let filter = filter_from_env();
+        let filter = EnvFilter::new(DEFAULT_FILTER);
         assert!(filter.to_string().contains("info"));
     }
 

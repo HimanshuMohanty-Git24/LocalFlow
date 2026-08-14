@@ -12,7 +12,7 @@ Manual:
 
 1. `npm run tauri dev`
 2. Confirm the dashboard window opens
-3. Open Settings, toggle a checkbox, click Save
+3. Open Settings, toggle a setting, restart, and confirm it was saved
 4. Close the window — the process should remain in the tray
 5. Tray → Open LocalFlow should show the window again
 6. Tray → Settings should open the Settings page
@@ -56,15 +56,18 @@ Manual:
 1. `npm run tauri dev`
 2. Click into Notepad (or any other app) so LocalFlow is not focused
 3. Hold **Ctrl+B**, speak, release (or release Ctrl)
-4. For a longer take: tap **B** twice while holding Ctrl, speak, then press any key
+4. For a longer take: tap **B** twice while holding Ctrl, speak, then press
+   **Space** or **Esc**
 5. A small floating overlay should hover near the bottom
    of the screen and must not steal Notepad’s focus
 6. Dashboard status should go `listening` then `idle`
-7. Overlay should disappear on release (or any-key in long mode)
-8. A new WAV appears (Show WAV in Explorer / `%TEMP%\localflow-mic-*.wav`)
-9. Play it — length should match the take, including pauses in the middle
-10. Typing `b` without Ctrl still works; Ctrl+C still works
-11. Settings → Toggle: Ctrl+B starts, Ctrl+B again stops
+7. Overlay should disappear on release (or Space/Esc in long mode)
+8. With **Save audio recordings** off, no dictation WAV is created
+9. Enable it and repeat; a WAV appears under
+   `%LOCALAPPDATA%\LocalFlow\recordings`
+10. Play it — length should match the take, including pauses in the middle
+11. Typing `b` without Ctrl still works; Ctrl+C still works
+12. Settings → Toggle: Ctrl+B starts, Ctrl+B again stops
 
 ## Phase 3
 
@@ -76,7 +79,7 @@ Manual:
 1. Copy `ggml-tiny.en.bin` (or `base.en` / `small.en`) into `models/`
    — see [models.md](models.md). Do not let the app download it.
 2. `npm run tauri dev`
-3. Dashboard Model row stays `Not loaded` until the first dictation
+3. Dashboard Model row says it is ready and will load on first use
 4. Hold **Ctrl+B**, speak a short English sentence, release
 5. Overlay shows Listening → Processing → the words
 6. Dashboard **Last transcript** matches what you said (raw, uncleaned)

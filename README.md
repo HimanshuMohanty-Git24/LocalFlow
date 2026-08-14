@@ -90,7 +90,7 @@ Needs about 8 GB RAM. Details: [docs/install.md](docs/install.md) and [docs/mode
 
 ## Privacy
 
-No accounts. No cloud APIs. No OpenAI. No Ollama requirement. No Python runtime in the shipped app. Audio and text history are off by default and never written to logs.
+No accounts. No cloud APIs. No OpenAI. No Ollama requirement. No Python runtime in the shipped app. Dictation audio stays in memory unless you explicitly enable saving; text history is also off by default. Neither is ever written to logs.
 
 See [docs/privacy.md](docs/privacy.md).
 
@@ -111,7 +111,7 @@ $env:LOCALFLOW_LOG = "debug"
 npm run tauri dev
 ```
 
-`main` only accepts pull requests. CI must pass. New installers are built by tagging `v*` (for example `git tag v0.1.1 && git push origin v0.1.1`).
+`main` only accepts pull requests. CI must pass. New installers are built by tagging `v*` (for example `git tag v0.1.3 && git push origin v0.1.3`).
 
 More: [CONTRIBUTING.md](CONTRIBUTING.md), [docs/architecture.md](docs/architecture.md).
 

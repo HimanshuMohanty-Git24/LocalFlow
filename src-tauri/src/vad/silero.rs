@@ -53,7 +53,11 @@ impl SileroVad {
 
     /// Returns speech-only audio, or `None` if the utterance is silence.
     /// If the VAD model is missing, returns the original samples.
-    pub fn extract_speech(&mut self, samples: &[f32], _sample_rate: u32) -> Result<Option<Vec<f32>>, AppError> {
+    pub fn extract_speech(
+        &mut self,
+        samples: &[f32],
+        _sample_rate: u32,
+    ) -> Result<Option<Vec<f32>>, AppError> {
         if samples.is_empty() {
             return Ok(None);
         }
@@ -69,7 +73,10 @@ impl SileroVad {
         if n <= 0 {
             return Ok(None);
         }
-        tracing::info!(samples = samples.len(), "vad: speech present, keeping full capture");
+        tracing::info!(
+            samples = samples.len(),
+            "vad: speech present, keeping full capture"
+        );
         Ok(Some(samples.to_vec()))
     }
 }

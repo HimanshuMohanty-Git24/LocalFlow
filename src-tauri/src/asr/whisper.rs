@@ -194,11 +194,17 @@ fn merge_tail(main: &str, tail: &str) -> String {
     for n in (1..=max).rev() {
         let a = main_words[main_words.len() - n..]
             .iter()
-            .map(|w| w.trim_matches(|c: char| !c.is_ascii_alphanumeric()).to_ascii_lowercase())
+            .map(|w| {
+                w.trim_matches(|c: char| !c.is_ascii_alphanumeric())
+                    .to_ascii_lowercase()
+            })
             .collect::<Vec<_>>();
         let b = tail_words[..n]
             .iter()
-            .map(|w| w.trim_matches(|c: char| !c.is_ascii_alphanumeric()).to_ascii_lowercase())
+            .map(|w| {
+                w.trim_matches(|c: char| !c.is_ascii_alphanumeric())
+                    .to_ascii_lowercase()
+            })
             .collect::<Vec<_>>();
         if a == b {
             let mut out: Vec<&str> = main_words;

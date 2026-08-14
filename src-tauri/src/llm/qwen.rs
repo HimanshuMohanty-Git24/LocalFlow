@@ -102,18 +102,19 @@ impl QwenBackend {
 
         let mut batch = LlamaBatch::new(512, 1);
         let last = (tokens.len() - 1) as i32;
-        for (i, token) in (0_i32..).zip(tokens.into_iter()) {
+        for (i, token) in (0_i32..).zip(tokens) {
             batch
                 .add(token, i, &[0], i == last)
                 .map_err(|_| AppError::LlmInitFailed)?;
         }
-        ctx.decode(&mut batch).map_err(|_| AppError::LlmInitFailed)?;
+        ctx.decode(&mut batch)
+            .map_err(|_| AppError::LlmInitFailed)?;
 
         let mut sampler = LlamaSampler::chain_simple([LlamaSampler::greedy()]);
-        let mut n_cur = batch.n_tokens();
+        let first_position = batch.n_tokens();
         let mut out = String::new();
         let mut decoder = encoding_rs::UTF_8.new_decoder();
-        for _ in 0..MAX_NEW_TOKENS {
+        for n_cur in (first_position..).take(MAX_NEW_TOKENS as usize) {
             let token = sampler.sample(&ctx, batch.n_tokens() - 1);
             sampler.accept(token);
             if model.is_eog_token(token) {
@@ -135,11 +136,14 @@ impl QwenBackend {
             batch
                 .add(token, n_cur, &[0], true)
                 .map_err(|_| AppError::LlmInitFailed)?;
-            ctx.decode(&mut batch).map_err(|_| AppError::LlmInitFailed)?;
-            n_cur += 1;
+            ctx.decode(&mut batch)
+                .map_err(|_| AppError::LlmInitFailed)?;
         }
 
-        tracing::info!(llm_ms = started.elapsed().as_millis() as u64, "llm finished");
+        tracing::info!(
+            llm_ms = started.elapsed().as_millis() as u64,
+            "llm finished"
+        );
         Ok(accept_rewrite(text, &out))
     }
 }

@@ -24,11 +24,7 @@ use crate::errors::AppError;
 pub fn inject(text: &str, preserve: bool) -> Result<(), AppError> {
     thread::sleep(Duration::from_millis(80));
 
-    let previous = if preserve {
-        read_unicode().ok()
-    } else {
-        None
-    };
+    let previous = if preserve { read_unicode().ok() } else { None };
 
     let paste_ok = set_unicode(text).is_ok() && send_ctrl_v().is_ok();
     if paste_ok {

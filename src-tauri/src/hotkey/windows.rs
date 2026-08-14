@@ -8,8 +8,7 @@ use std::thread::{self, JoinHandle};
 use windows::Win32::Foundation::{LPARAM, LRESULT, WPARAM};
 use windows::Win32::System::Threading::GetCurrentThreadId;
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    VK_B, VK_CONTROL, VK_LCONTROL, VK_LMENU, VK_LSHIFT, VK_LWIN, VK_MENU, VK_RCONTROL, VK_RMENU,
-    VK_RSHIFT, VK_RWIN, VK_SHIFT,
+    VK_B, VK_CONTROL, VK_ESCAPE, VK_LCONTROL, VK_RCONTROL, VK_SPACE,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     CallNextHookEx, DispatchMessageW, GetMessageW, PostThreadMessageW, SetWindowsHookExW,
@@ -17,9 +16,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
     WM_KEYDOWN, WM_KEYUP, WM_QUIT, WM_SYSKEYDOWN, WM_SYSKEYUP,
 };
 
-use super::{
-    apply_ctrl_b, long_listen_should_stop, ChordState, HotkeyAction,
-};
+use super::{apply_ctrl_b, long_listen_should_stop, ChordState, HotkeyAction};
 use crate::errors::AppError;
 
 static SENDER: OnceLock<Mutex<Option<SyncSender<HotkeyAction>>>> = OnceLock::new();
@@ -49,14 +46,7 @@ pub fn install(tx: SyncSender<HotkeyAction>) -> Result<WindowsHook, AppError> {
 
 fn hook_thread() {
     HOOK_THREAD.store(unsafe { GetCurrentThreadId() }, Ordering::SeqCst);
-    let hook = unsafe {
-        SetWindowsHookExW(
-            WH_KEYBOARD_LL,
-            Some(low_level_keyboard_proc),
-            None,
-            0,
-        )
-    };
+    let hook = unsafe { SetWindowsHookExW(WH_KEYBOARD_LL, Some(low_level_keyboard_proc), None, 0) };
     let Ok(hook) = hook else {
         tracing::error!("SetWindowsHookExW failed");
         return;
@@ -86,7 +76,7 @@ unsafe extern "system" fn low_level_keyboard_proc(
         let up = wparam.0 == WM_KEYUP as usize || wparam.0 == WM_SYSKEYUP as usize;
         let down = wparam.0 == WM_KEYDOWN as usize || wparam.0 == WM_SYSKEYDOWN as usize;
         let injected = kb.flags.0 & 0x10 != 0;
-        if down && !injected && long_listen_should_stop() && !is_hold_key(vk) {
+        if down && !injected && long_listen_should_stop() && is_long_stop_key(vk) {
             send(HotkeyAction::StopNow);
             return LRESULT(1);
         }
@@ -110,19 +100,8 @@ unsafe extern "system" fn low_level_keyboard_proc(
     unsafe { CallNextHookEx(None, code, wparam, lparam) }
 }
 
-fn is_hold_key(vk: u32) -> bool {
-    vk == u32::from(VK_CONTROL.0)
-        || vk == u32::from(VK_LCONTROL.0)
-        || vk == u32::from(VK_RCONTROL.0)
-        || vk == u32::from(VK_SHIFT.0)
-        || vk == u32::from(VK_LSHIFT.0)
-        || vk == u32::from(VK_RSHIFT.0)
-        || vk == u32::from(VK_MENU.0)
-        || vk == u32::from(VK_LMENU.0)
-        || vk == u32::from(VK_RMENU.0)
-        || vk == u32::from(VK_LWIN.0)
-        || vk == u32::from(VK_RWIN.0)
-        || vk == u32::from(VK_B.0)
+fn is_long_stop_key(vk: u32) -> bool {
+    vk == u32::from(VK_SPACE.0) || vk == u32::from(VK_ESCAPE.0)
 }
 
 fn send(action: HotkeyAction) {
@@ -151,5 +130,17 @@ impl Drop for WindowsHook {
                 *guard = None;
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn long_listen_stops_only_on_space_or_escape() {
+        assert!(is_long_stop_key(u32::from(VK_SPACE.0)));
+        assert!(is_long_stop_key(u32::from(VK_ESCAPE.0)));
+        assert!(!is_long_stop_key(u32::from(VK_B.0)));
     }
 }

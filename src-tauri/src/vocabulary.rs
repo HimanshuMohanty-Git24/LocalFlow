@@ -26,7 +26,9 @@ impl Vocabulary {
                 break;
             }
         }
-        Self { terms: dedupe(terms) }
+        Self {
+            terms: dedupe(terms),
+        }
     }
 
     pub fn whisper_prompt(&self) -> String {
@@ -89,7 +91,7 @@ impl Vocabulary {
         let heard = core.to_ascii_lowercase();
         for term in &self.terms {
             if matches_term(&heard, &term.canonical, &term.aliases) {
-                return format!("{lead}{}{trail}", preserve_shape(&term.canonical, &core));
+                return format!("{lead}{}{trail}", preserve_shape(&term.canonical, core));
             }
         }
         raw.to_string()
@@ -98,7 +100,10 @@ impl Vocabulary {
 
 fn builtin() -> Vec<Term> {
     vec![
-        term("Himanshu", &["Manchu", "Manshu", "Himansu", "Imansu", "Jiman"]),
+        term(
+            "Himanshu",
+            &["Manchu", "Manshu", "Himansu", "Imansu", "Jiman"],
+        ),
         term("Odisha", &["Orissa", "Orysa", "Odisa", "Odisha"]),
         term("Angul", &["Angul", "Angool"]),
         term("LocalFlow", &["localflow"]),
@@ -106,8 +111,14 @@ fn builtin() -> Vec<Term> {
         term("ground up", &["gowns up", "grounds up"]),
         term("paying a penny", &["paying a fund", "paying for penny"]),
         term("Wispr Flow", &["whisper flow", "whisperflow"]),
-        term("defence tech", &["defend spec", "defense spec", "defend tech", "defense tech"]),
-        term("B. R. Ambedkar", &["B. R. M. Betka", "BR Ambedkar", "Ambedkar"]),
+        term(
+            "defence tech",
+            &["defend spec", "defense spec", "defend tech", "defense tech"],
+        ),
+        term(
+            "B. R. Ambedkar",
+            &["B. R. M. Betka", "BR Ambedkar", "Ambedkar"],
+        ),
         term(
             "Yuval Noah Harari",
             &[
@@ -167,11 +178,7 @@ fn dedupe(terms: Vec<Term>) -> Vec<Term> {
             .find(|t| t.canonical.eq_ignore_ascii_case(&term.canonical))
         {
             for a in term.aliases {
-                if !existing
-                    .aliases
-                    .iter()
-                    .any(|e| e.eq_ignore_ascii_case(&a))
-                {
+                if !existing.aliases.iter().any(|e| e.eq_ignore_ascii_case(&a)) {
                     existing.aliases.push(a);
                 }
             }
@@ -182,7 +189,10 @@ fn dedupe(terms: Vec<Term>) -> Vec<Term> {
     out
 }
 
-fn match_phrase<'a>(tokens: &[&str], phrases: &[(&'a Term, Vec<String>)]) -> Option<(&'a Term, usize)> {
+fn match_phrase<'a>(
+    tokens: &[&str],
+    phrases: &[(&'a Term, Vec<String>)],
+) -> Option<(&'a Term, usize)> {
     for (term, parts) in phrases {
         if tokens.len() < parts.len() {
             continue;
@@ -263,7 +273,9 @@ fn preserve_shape(canonical: &str, heard: &str) -> String {
 
 #[allow(dead_code)]
 pub fn search_path() -> Option<PathBuf> {
-    paths::search_dirs().into_iter().find(|d| d.join("vocabulary.txt").exists())
+    paths::search_dirs()
+        .into_iter()
+        .find(|d| d.join("vocabulary.txt").exists())
 }
 
 #[cfg(test)]
