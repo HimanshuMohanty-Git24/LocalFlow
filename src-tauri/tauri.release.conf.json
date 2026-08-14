@@ -1,0 +1,9 @@
+{
+  "bundle": {
+    "resources": {
+      "../models/ggml-base.en.bin": "models/ggml-base.en.bin",
+      "../models/ggml-silero-v5.1.2.bin": "models/ggml-silero-v5.1.2.bin",
+      "../models/vocabulary.txt": "models/vocabulary.txt"
+    }
+  }
+}
