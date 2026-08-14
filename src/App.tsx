@@ -115,7 +115,7 @@ export default function App() {
         </button>
         <div className="sidebar-spacer" />
         <div className="sidebar-foot">
-          <span>LocalFlow v0.1.0</span>
+          <span>LocalFlow v0.1.1</span>
           <button
             type="button"
             className="nav-quiet"
