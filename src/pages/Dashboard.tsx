@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { AppStatus, MicTestResult } from "../types/settings";
+import { IconCopy, IconFolder } from "../ui/icons";
 
 type Props = {
   status: AppStatus | null;
@@ -14,13 +16,20 @@ type Props = {
   onShortUp: () => void;
 };
 
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="row-line">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  );
+const STATE_LABEL: Record<string, string> = {
+  idle: "Ready",
+  preparing: "Preparing",
+  listening: "Listening",
+  speech_detected: "Hearing you",
+  transcribing: "Transcribing",
+  normalizing: "Cleaning",
+  injecting: "Inserting",
+  error: "Error",
+};
+
+function modelName(value: string | undefined) {
+  if (!value || value === "—") return "Not loaded";
+  return value.replace(/^.*[\\/]/, "").replace(/\.(bin|gguf)$/i, "");
 }
 
 export function Dashboard({
@@ -36,14 +45,58 @@ export function Dashboard({
   onShortDown,
   onShortUp,
 }: Props) {
+  const [copied, setCopied] = useState(false);
+  const inserted = lastCleaned ?? lastTranscript;
+  const hotkey = status?.hotkey ?? "Ctrl+B";
+
+  const copyInserted = async () => {
+    if (!inserted) return;
+    try {
+      await navigator.clipboard.writeText(inserted);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1400);
+    } catch {
+      setCopied(false);
+    }
+  };
+
   return (
-    <section>
-      <h1>LocalFlow</h1>
+    <section className="page">
+      <h1>Dictation</h1>
       <p className="lede">
-        Completely offline. Click into Notepad, then use one of the two
-        shortcuts below. Silence is ignored. Local rules plus optional Qwen
-        (on this PC) clean the text before paste.
+        Completely offline. Click into a text field, then hold {hotkey}.
+        Silence is ignored. Optional local Qwen cleans the text before paste.
       </p>
+
+      <div className="banner">
+        <div>
+          <h2>
+            Speak once. Paste <em>here</em>.
+          </h2>
+          <p>
+            Hold <kbd>{hotkey}</kbd> to dictate. Double-tap it for long listen.
+            Nothing leaves this PC.
+          </p>
+        </div>
+      </div>
+
+      <div className="stat-grid">
+        <div className="stat">
+          <span>Status</span>
+          <strong>
+            {STATE_LABEL[status?.state ?? "idle"] ?? status?.state ?? "Loading"}
+          </strong>
+        </div>
+        <div className="stat">
+          <span>Microphone</span>
+          <strong>{status?.microphone ?? "—"}</strong>
+        </div>
+        <div className="stat">
+          <span>Whisper</span>
+          <strong>{modelName(status?.asr_model)}</strong>
+        </div>
+      </div>
+
       <div className="mode-grid">
         <button
           type="button"
@@ -55,65 +108,66 @@ export function Dashboard({
           onPointerUp={onShortUp}
           onPointerCancel={onShortUp}
         >
-          <strong>Short</strong>
-          <span>Hold this button, or hold Ctrl+B. Speak, then release.</span>
+          <strong>Short listen</strong>
+          <span>Hold this, or hold {hotkey}. Speak, then release.</span>
         </button>
         <button type="button" className="mode-card" onClick={onLongListen}>
-          <strong>Long</strong>
-          <span>
-            Click here, or press Ctrl+B twice. Speak. Press Space or Esc to
-            stop.
-          </span>
+          <strong>Long listen</strong>
+          <span>Click here, or press {hotkey} twice. Space or Esc to stop.</span>
         </button>
       </div>
-      <div className="card">
-        <Row label="Status" value={status?.state ?? "loading"} />
-        <Row label="Microphone" value={status?.microphone ?? "—"} />
-        <Row label="Model" value={status?.asr_model ?? "—"} />
-        <Row label="AI cleanup" value={status?.llm_enabled ? "On" : "Off"} />
-        <Row label="Hotkey" value={status?.hotkey ?? "—"} />
-        <Row
-          label="Network"
-          value={status?.offline ? "Offline by design" : "Unexpected"}
-        />
-      </div>
-      <div className="actions">
-        <button type="button" onClick={onRecordTest} disabled={recording}>
-          {recording ? "Recording 5 seconds…" : "Test microphone"}
-        </button>
-        <button type="button" onClick={onOpenSettings}>
-          Open settings
-        </button>
-      </div>
-      {lastCleaned !== null || lastTranscript !== null ? (
+
+      {inserted ? (
         <div className="card">
-          {lastCleaned !== null ? (
-            <Row label="Inserted" value={lastCleaned || "(empty)"} />
-          ) : null}
-          {lastTranscript !== null && lastTranscript !== lastCleaned ? (
-            <Row label="Raw Whisper" value={lastTranscript || "(empty)"} />
-          ) : null}
+          <div className="feed-item">
+            <div className="feed-meta">
+              <span>{copied ? "Copied" : "Latest"}</span>
+              <div className="feed-actions">
+                <button
+                  type="button"
+                  className="icon-btn"
+                  title="Copy"
+                  onClick={() => void copyInserted()}
+                >
+                  <IconCopy size={16} />
+                </button>
+              </div>
+            </div>
+            <div>{inserted || "(empty)"}</div>
+            {lastTranscript && lastCleaned && lastTranscript !== lastCleaned ? (
+              <p className="hint">Raw Whisper: {lastTranscript}</p>
+            ) : null}
+          </div>
         </div>
       ) : (
-        <p className="lede">
-          Put a Whisper ggml file in <code>models/</code> (see
-          docs/models.md). Then use Short or Long dictation.
+        <p className="hint">
+          Put a Whisper ggml file in <code>models/</code>, then use Short or
+          Long. See docs/models.md.
         </p>
       )}
-      {lastRecording ? (
-        <p className="lede">
-          Saved {lastRecording.duration_ms / 1000}s WAV at{" "}
-          {lastRecording.sample_rate} Hz, {lastRecording.channels} ch (
-          {lastRecording.frames} frames).
-          <br />
+
+      <div className="actions">
+        <button
+          type="button"
+          className="primary"
+          onClick={onRecordTest}
+          disabled={recording}
+        >
+          {recording ? "Recording…" : "Test microphone"}
+        </button>
+        <button type="button" className="ghost" onClick={onOpenSettings}>
+          Open settings
+        </button>
+        {lastRecording ? (
           <button
             type="button"
+            className="ghost"
             onClick={() => onRevealRecording(lastRecording.path)}
           >
-            Show WAV in Explorer
+            <IconFolder size={16} /> Show WAV
           </button>
-        </p>
-      ) : null}
+        ) : null}
+      </div>
     </section>
   );
 }
