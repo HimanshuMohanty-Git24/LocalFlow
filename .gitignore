@@ -9,6 +9,9 @@ models/*.pt
 !models/README.md
 !models/checksums.json
 
+# Video project (only the README asset in docs/assets is tracked)
+videos/
+
 # Logs
 logs
 *.log

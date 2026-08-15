@@ -46,6 +46,12 @@
 
 LocalFlow is a desktop dictation app: hold a hotkey, speak, and cleaned text is pasted into the focused window. Recognition runs with **whisper.cpp** on-device. Optional punctuation cleanup can use a local **Qwen** GGUF. There is no account, no telemetry, and no network call for speech.
 
+## Demo
+
+<video src="https://github.com/HimanshuMohanty-Git24/LocalFlow/raw/main/docs/assets/localflow-demo.mp4" controls width="100%"></video>
+
+If the player does not load, [download the demo](docs/assets/localflow-demo.mp4).
+
 ## Features
 
 - **Fully offline** — audio, transcripts, and clipboard never leave the machine
@@ -93,6 +99,14 @@ Needs about 8 GB RAM. Details: [docs/install.md](docs/install.md) and [docs/mode
 No accounts. No cloud APIs. No OpenAI. No Ollama requirement. No Python runtime in the shipped app. Dictation audio stays in memory unless you explicitly enable saving; text history is also off by default. Neither is ever written to logs.
 
 See [docs/privacy.md](docs/privacy.md).
+
+## Architecture
+
+<p align="center">
+  <img src="docs/assets/architecture.png" width="100%" alt="LocalFlow architecture: Tauri UI, Rust core, on-device Silero VAD → whisper.cpp → rules → optional Qwen, then text injection. No network calls." />
+</p>
+
+Hotkey → capture → VAD → whisper.cpp → rule cleanup → optional Qwen → paste into the focused app. Models and settings live on disk; nothing crosses the network. Details: [docs/architecture.md](docs/architecture.md).
 
 ## Development
 
