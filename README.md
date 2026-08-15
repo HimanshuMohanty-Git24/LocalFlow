@@ -48,9 +48,13 @@ LocalFlow is a desktop dictation app: hold a hotkey, speak, and cleaned text is 
 
 ## Demo
 
-<video src="https://github.com/HimanshuMohanty-Git24/LocalFlow/raw/main/docs/assets/localflow-demo.mp4" controls width="100%"></video>
-
-If the player does not load, [download the demo](docs/assets/localflow-demo.mp4).
+<p align="center">
+  <a href="https://github.com/HimanshuMohanty-Git24/LocalFlow/blob/main/docs/assets/localflow-demo.mp4">
+    <img src="docs/assets/demo-poster.png" width="720" alt="LocalFlow demo — click to play" />
+  </a>
+  <br />
+  <sub>55-second walkthrough · click to play</sub>
+</p>
 
 ## Features
 
