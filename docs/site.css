@@ -147,6 +147,14 @@ section h2 {
   margin-bottom: 0;
 }
 
+.demo-video {
+  width: 100%;
+  display: block;
+  background: #0b1220;
+  border: 1px solid #243041;
+  border-radius: 14px;
+}
+
 .steps {
   padding-left: 1.2rem;
   color: var(--muted);
