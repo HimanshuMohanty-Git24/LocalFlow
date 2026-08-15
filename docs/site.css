@@ -148,8 +148,12 @@ section h2 {
 }
 
 .demo-video {
-  width: 100%;
   display: block;
+  width: 100%;
+  max-width: 820px;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  margin: 0 auto;
   background: #0b1220;
   border: 1px solid #243041;
   border-radius: 14px;
